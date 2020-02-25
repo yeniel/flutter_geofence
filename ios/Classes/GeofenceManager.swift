@@ -37,11 +37,12 @@ class GeofenceManager: NSObject, CLLocationManagerDelegate {
 		self.callback = callback
 		self.userLocationUpdated = locationUpdate
 		super.init()
-		locationManager.requestAlwaysAuthorization()
 		locationManager.delegate = self
 	}
 	
 	func startMonitoring(georegion: GeoRegion) {
+	    locationManager.requestAlwaysAuthorization()
+
 		if CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
 			// Register the region.
 			let center = CLLocationCoordinate2D(latitude: georegion.latitude, longitude: georegion.longitude)

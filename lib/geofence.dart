@@ -37,6 +37,18 @@ class Geofence {
     });
   }
 
+  // Removes a geolocation for a certain geo-event
+  static Future<void> removeGeolocation(
+      Geolocation geolocation, GeolocationEvent event) {
+    return _channel.invokeMethod("removeRegion", {
+      "lng": geolocation.longitude,
+      "lat": geolocation.latitude,
+      "id": geolocation.id,
+      "radius": geolocation.radius,
+      "event": event.toString(),
+    });
+  }
+
   /// Get the latest location the user has been.
   static Future<Coordinate> getCurrentLocation() async {
     _channel.invokeMethod("getUserLocation", null);

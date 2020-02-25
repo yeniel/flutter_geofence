@@ -22,7 +22,7 @@ public class SwiftGeofencePlugin: NSObject, FlutterPlugin {
 	}
 	
 	public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-		if (call.method == "addRegion") {
+		if (call.method == "addRegion" || call.method == "removeRegion") {
 			guard let arguments = call.arguments as? [AnyHashable: Any] else { return }
 			guard let identifier = arguments["id"] as? String,
 				let latitude = arguments["lat"] as? Double,
@@ -31,10 +31,15 @@ public class SwiftGeofencePlugin: NSObject, FlutterPlugin {
 			}
 			let radius = arguments["radius"] as? Double
 			let event = arguments["event"] as? String
-			addRegion(identifier: identifier, latitude: latitude, longitude: longitude, radius: radius, event: event ?? "")
+
+			if (call.method == "addRegion") {
+			    addRegion(identifier: identifier, latitude: latitude, longitude: longitude, radius: radius, event: event ?? "")
+			} else {
+			    removeRegion(identifier: identifier, latitude: latitude, longitude: longitude, radius: radius, event: event ?? "")
+			}
+
 			result(nil)
-		}
-		else if (call.method == "getUserLocation") {
+		} else if (call.method == "getUserLocation") {
 			geofenceManager.getUserLocation()
 		}
 	}
@@ -48,16 +53,31 @@ public class SwiftGeofencePlugin: NSObject, FlutterPlugin {
 	}
 	
 	private func addRegion(identifier: String, latitude: Double, longitude: Double, radius: Double?, event: String) {
-		let events: [GeoEvent]
-		switch event {
-		case "entry":
-			events = [.entry]
-		case "exit":
-			events = [.exit]
-		default:
-			events = [.entry, .exit]
-		}
-		let georegion = GeoRegion(id: identifier, radius: radius ?? 50.0, latitude: latitude, longitude: longitude, events: events)
+		let georegion = createRegion(id: identifier, radius: radius ?? 50.0, latitude: latitude, longitude: longitude, events: events)
+
 		geofenceManager.startMonitoring(georegion: georegion)
 	}
+
+	private func removeRegion(identifier: String, latitude: Double, longitude: Double, radius: Double?, event: String) {
+        let georegion = createRegion(id: identifier, radius: radius ?? 50.0, latitude: latitude, longitude: longitude, events: events)
+
+        geofenceManager.stopMonitoring(georegion: georegion)
+    }
+
+    private func createRegion(identifier: String, latitude: Double, longitude: Double, radius: Double?, event: String) -> GeoRegion {
+        let events: [GeoEvent]
+
+        switch event {
+        case "entry":
+            events = [.entry]
+        case "exit":
+            events = [.exit]
+        default:
+            events = [.entry, .exit]
+        }
+
+        let georegion = GeoRegion(id: identifier, radius: radius ?? 50.0, latitude: latitude, longitude: longitude, events: events)
+
+        return georegion
+    }
 }

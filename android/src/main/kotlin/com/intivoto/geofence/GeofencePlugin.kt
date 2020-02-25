@@ -114,8 +114,9 @@ public class GeofencePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) =
-            if (call.method == "addRegion") {
+            if (call.method == "addRegion" || call.method == "removeRegion") {
                 val arguments = call.arguments as? HashMap<*, *>
+
                 if (arguments != null) {
                     val region = safeLet(arguments["id"] as? String,
                             arguments["radius"] as? Double,
@@ -134,8 +135,18 @@ public class GeofencePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                                     else -> GeoEvent.values().toList()
                                 })
                     }
+
                     if (region != null) {
-                        geofenceManager?.startMonitoring(region)
+                        safeLet(registrar.activity(),registrar.activeContext().applicationContext) { activity, context ->
+                            checkPermissions(context, activity)
+                        }
+
+                        if (call.method == "addRegion") {
+                            geofenceManager?.startMonitoring(region)
+                        } else {
+                            geofenceManager?.stopMonitoring(region)
+                        }
+
                         result.success(null)
                     } else {
                         result.error("Invalid arguments", "Has invalid arguments", "Has invalid arguments")

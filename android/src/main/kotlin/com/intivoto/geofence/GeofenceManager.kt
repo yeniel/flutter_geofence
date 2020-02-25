@@ -81,6 +81,10 @@ class GeofenceManager(context: Context,
         }
     }
 
+    fun stopMonitoring(geoRegion: GeoRegion) {
+        geofencingClient.removeGeofences(listOf(geoRegion.id));
+    }
+
     private fun getGeofencingRequest(geofence: Geofence): GeofencingRequest {
         val geofenceList = listOf(geofence)
         return GeofencingRequest.Builder().apply {
