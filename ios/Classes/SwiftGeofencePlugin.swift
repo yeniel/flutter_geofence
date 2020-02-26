@@ -24,7 +24,7 @@ public class SwiftGeofencePlugin: NSObject, FlutterPlugin {
 	public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
 		if (call.method == "addRegion" || call.method == "removeRegion") {
 			guard let arguments = call.arguments as? [AnyHashable: Any] else { return }
-			guard let identifier = arguments["id"] as? String,
+			guard let id = arguments["id"] as? String,
 				let latitude = arguments["lat"] as? Double,
 				let longitude = arguments["lng"] as? Double else {
 					return
@@ -33,9 +33,9 @@ public class SwiftGeofencePlugin: NSObject, FlutterPlugin {
 			let event = arguments["event"] as? String
 
 			if (call.method == "addRegion") {
-			    addRegion(identifier: identifier, latitude: latitude, longitude: longitude, radius: radius, event: event ?? "")
+			    addRegion(id: id, latitude: latitude, longitude: longitude, radius: radius, event: event ?? "")
 			} else {
-			    removeRegion(identifier: identifier, latitude: latitude, longitude: longitude, radius: radius, event: event ?? "")
+			    removeRegion(id: id, latitude: latitude, longitude: longitude, radius: radius, event: event ?? "")
 			}
 
 			result(nil)
@@ -52,19 +52,19 @@ public class SwiftGeofencePlugin: NSObject, FlutterPlugin {
 		}
 	}
 	
-	private func addRegion(identifier: String, latitude: Double, longitude: Double, radius: Double?, event: String) {
-		let georegion = createRegion(id: identifier, radius: radius ?? 50.0, latitude: latitude, longitude: longitude, events: events)
+	private func addRegion(id: String, latitude: Double, longitude: Double, radius: Double?, event: String) {
+		let georegion = createRegion(id: id, latitude: latitude, longitude: longitude, radius: radius ?? 50.0, event: event)
 
 		geofenceManager.startMonitoring(georegion: georegion)
 	}
 
-	private func removeRegion(identifier: String, latitude: Double, longitude: Double, radius: Double?, event: String) {
-        let georegion = createRegion(id: identifier, radius: radius ?? 50.0, latitude: latitude, longitude: longitude, events: events)
+	private func removeRegion(id: String, latitude: Double, longitude: Double, radius: Double?, event: String) {
+        let georegion = createRegion(id: id, latitude: latitude, longitude: longitude, radius: radius ?? 50.0, event: event)
 
         geofenceManager.stopMonitoring(georegion: georegion)
     }
 
-    private func createRegion(identifier: String, latitude: Double, longitude: Double, radius: Double?, event: String) -> GeoRegion {
+    private func createRegion(id: String, latitude: Double, longitude: Double, radius: Double?, event: String) -> GeoRegion {
         let events: [GeoEvent]
 
         switch event {
@@ -76,7 +76,7 @@ public class SwiftGeofencePlugin: NSObject, FlutterPlugin {
             events = [.entry, .exit]
         }
 
-        let georegion = GeoRegion(id: identifier, radius: radius ?? 50.0, latitude: latitude, longitude: longitude, events: events)
+        let georegion = GeoRegion(id: id, radius: radius ?? 50.0, latitude: latitude, longitude: longitude, events: events)
 
         return georegion
     }
