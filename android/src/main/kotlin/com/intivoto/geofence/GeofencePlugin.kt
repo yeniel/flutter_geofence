@@ -35,10 +35,6 @@ public class GeofencePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
             return@addRequestPermissionsResultListener false
         }
 
-        safeLet(activityPluginBinding.activity, activityPluginBinding.activity.applicationContext) { activity, context ->
-            checkPermissions(context, activity)
-        }
-
         print("on attached to activity called.")
     }
 
@@ -55,12 +51,15 @@ public class GeofencePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     companion object {
         private var geofenceManager: GeofenceManager? = null
         private var channel: MethodChannel? = null
+        private var registrar: Registrar? = null
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "geofence")
             channel.setMethodCallHandler(GeofencePlugin())
             GeofencePlugin.channel = channel
+
+            this.registrar = registrar
 
             registrar.addRequestPermissionsResultListener { requestCode, permissions, grantResults ->
                 if (requestCode == 999 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -70,11 +69,6 @@ public class GeofencePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                 }
 
                 return@addRequestPermissionsResultListener false
-            }
-
-
-            safeLet(registrar.activity(),registrar.activeContext().applicationContext) { activity, context ->
-                checkPermissions(context, activity)
             }
         }
 
@@ -137,7 +131,7 @@ public class GeofencePlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
                     }
 
                     if (region != null) {
-                        safeLet(registrar.activity(),registrar.activeContext().applicationContext) { activity, context ->
+                        safeLet(registrar?.activity(), registrar?.activeContext()?.applicationContext) { activity, context ->
                             checkPermissions(context, activity)
                         }
 
